@@ -24,4 +24,8 @@ public interface IDataTarget
     OutputFile ExportTables(List<DefTable> tables);
 
     OutputFile ExportRecord(DefTable table, Record record);
+
+    void ProcessDataTargetBegin() { }
+
+    void ProcessDataTargetEnd() { }
 }

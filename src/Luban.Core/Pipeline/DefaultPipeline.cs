@@ -147,11 +147,13 @@ public class DefaultPipeline : IPipeline
     protected void ProcessDataTarget(string name, IDataExporter mission, IDataTarget dataTarget)
     {
         s_logger.Info("process data target:{} begin", name);
+        dataTarget.ProcessDataTargetBegin();
         var outputManifest = new OutputFileManifest(name, OutputType.Data);
         mission.Handle(_genCtx, dataTarget, outputManifest);
 
         var newManifest = PostProcess(BuiltinOptionNames.DataPostprocess, outputManifest);
         Save(newManifest);
+        dataTarget.ProcessDataTargetEnd();
         s_logger.Info("process data target:{} end", name);
     }
 

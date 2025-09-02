@@ -134,7 +134,7 @@ internal static class Program
         catch (Exception e)
         {
             PrettyPrintException(e);
-            s_logger.Error("run failed!!!");
+            s_logger.Error(e, "run failed!!!");
             if (exitOnError)
             {
                 Environment.Exit(1);

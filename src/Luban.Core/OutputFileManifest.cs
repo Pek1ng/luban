@@ -26,6 +26,11 @@ public class OutputFileManifest
 
     public void AddFile(OutputFile file)
     {
+        if (file == null)
+        {
+            return;
+        }
+
         lock (this)
         {
             _dataFiles.Add(file);
