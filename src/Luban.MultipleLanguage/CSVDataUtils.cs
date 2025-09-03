@@ -1,10 +1,11 @@
 ﻿using ExcelDataReader;
 using System.Data;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Luban.MultipleLanguage;
 
-internal static class CSVDataUtil
+internal static partial class CSVDataUtil
 {
     private static DataSet _transData;
 
@@ -31,19 +32,20 @@ internal static class CSVDataUtil
                 }
 
                 _textToKey = [];
+                string langKeyLine = $"{CommonString.TableValue}@{defaultLang}";
 
                 foreach (DataTable dataTable in TransData.Tables)
                 {
                     Dictionary<string, string> tableDic = [];
                     _textToKey.TryAdd(dataTable.TableName, tableDic);
 
-                    // 除了表头的前两行都是定义
-                    for (int i = 2; i < dataTable.Rows.Count; i++)
+                    // 除了表头的第一行是定义
+                    for (int i = 1; i < dataTable.Rows.Count; i++)
                     {
                         var row = dataTable.Rows[i];
                         string key = (string)row[CommonString.TableKey];
-                        string text = (string)row[CommonString.TableValue];
-                        tableDic.Add(text, key);
+                        string text = (string)row[langKeyLine];
+                        tableDic.TryAdd(text, key);
                     }
                 }
             }
@@ -102,7 +104,12 @@ internal static class CSVDataUtil
                             colNums = reader.FieldCount;
                             for (int i = 0; i < colNums; i++)
                             {
-                                dt.Columns.Add(reader.GetString(i));
+                                string name = reader.GetString(i);
+                                if (i > 4)
+                                {
+                                    name = $"{name}_{i - 4}";
+                                }
+                                dt.Columns.Add(name);
                             }
                             dt.PrimaryKey = [dt.Columns[CommonString.TableKey]];
                         }
@@ -136,7 +143,8 @@ internal static class CSVDataUtil
 
         foreach (DataColumn column in dt.Columns)
         {
-            sb.Append(column.ColumnName + ",");
+            string columnName = CustopmRegex().Replace(column.ColumnName, "");
+            sb.Append(columnName + ",");
         }
         sb.Remove(sb.Length - 1, 1); // 移除最后一个逗号
         sb.AppendLine();
@@ -178,4 +186,7 @@ internal static class CSVDataUtil
 
         return Encoding.GetEncoding("GB2312");
     }
+
+    [GeneratedRegex(@"_\d+$")]
+    private static partial Regex CustopmRegex();
 }

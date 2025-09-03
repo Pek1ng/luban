@@ -13,13 +13,13 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
 
     private bool _hasDefaultLangKey = false;
 
-    public string DefaultLangKey = string.Empty;
+    private string _defaultLangKey = string.Empty;
 
     private List<string> _files = new();
 
     void IDataTarget.ProcessDataTargetBegin()
     {
-        _hasDefaultLangKey = EnvManager.Current.TryGetOption(LocalizationOptionNames.LocalizationFamily, LocalizationOptionNames.DefaultLang, false, out DefaultLangKey);
+        _hasDefaultLangKey = EnvManager.Current.TryGetOption(LocalizationOptionNames.LocalizationFamily, LocalizationOptionNames.DefaultLang, false, out _defaultLangKey);
     }
 
     void IDataTarget.ProcessDataTargetEnd()
@@ -102,6 +102,8 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
             DataSet ds = CSVDataUtil.TransData;
             DataTable dt;
 
+            string langKeyLine = $"{CommonString.TableValue}@{_defaultLangKey}";
+
             if (ds.Tables.Contains(fileName))
             {
                 dt = ds.Tables[fileName];
@@ -116,20 +118,15 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
 
                 dt.Columns.Add(CommonString.TableDefKey);
                 dt.Columns.Add(CommonString.TableKey);
-                dt.Columns.Add("#remark");
-                dt.Columns.Add(CommonString.ChangedFlagKey);
                 dt.Columns.Add(CommonString.TableValue);
+                dt.Columns.Add(CommonString.ChangedFlagKey);
+
+                dt.Columns.Add(langKeyLine);
 
                 var row = dt.NewRow();
                 row[CommonString.TableDefKey] = "##type";
                 row[CommonString.TableKey] = "LangKey";
                 row[CommonString.TableValue] = "string";
-                dt.Rows.Add(row);
-
-                row = dt.NewRow();
-                row[CommonString.TableDefKey] = "##group";
-                row[CommonString.TableKey] = "all";
-                row[CommonString.TableValue] = DefaultLangKey;
                 dt.Rows.Add(row);
 
                 dt.PrimaryKey = [dt.Columns[CommonString.TableKey]];
@@ -150,13 +147,13 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
                 }
 
                 var oldChangeFlag = row[CommonString.ChangedFlagKey];
-                string oldValue = row[CommonString.TableValue] == DBNull.Value ? string.Empty : (string)row[CommonString.TableValue];
+                string oldValue = row[langKeyLine] == DBNull.Value ? string.Empty : (string)row[langKeyLine];
                 if (oldChangeFlag == DBNull.Value ||
                     oldChangeFlag is string str && str != true.ToString() && oldValue != liVal)
                 {
                     row[CommonString.ChangedFlagKey] = true.ToString();
                 }
-                row[CommonString.TableValue] = liVal;
+                row[langKeyLine] = liVal;
             }
 
             _files.Add(fileName);
