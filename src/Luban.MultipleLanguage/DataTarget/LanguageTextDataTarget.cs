@@ -131,7 +131,7 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
 
                     var row = dt.NewRow();
                     row[CommonString.TableDefKey] = "##type";
-                    row[CommonString.TableKey] = "LangKey";
+                    row[CommonString.TableKey] = "string";
                     row[CommonString.TableValue] = "string";
                     dt.Rows.Add(row);
 
