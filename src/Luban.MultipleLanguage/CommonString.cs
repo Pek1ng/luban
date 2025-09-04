@@ -9,5 +9,7 @@
         public const string TableDefKey = "##var";
 
         public const string ChangedFlagKey = "#changed";
+
+        public const string ExportEnumName = "LangKey";
     }
 }

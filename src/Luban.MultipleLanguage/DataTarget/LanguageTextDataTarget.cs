@@ -69,20 +69,19 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
         root.AppendChild(enumElement);
 
         XmlAttribute enumNameAttr = doc.CreateAttribute("name");
-        enumNameAttr.Value = "LangKey";
+        enumNameAttr.Value = CommonString.ExportEnumName;
         enumElement.Attributes.Append(enumNameAttr);
 
-        foreach (var item in CSVDataUtil.TextToKey)
-        {
-            foreach (var pair in item.Value)
-            {
-                XmlElement varElement = doc.CreateElement("var");
-                enumElement.AppendChild(varElement);
+        var keys = CSVDataUtil.TextToKey.SelectMany(item => item.Value.Values).OrderBy(s => s);
 
-                XmlAttribute varNameAttr = doc.CreateAttribute("name");
-                varNameAttr.Value = pair.Value;
-                varElement.Attributes.Append(varNameAttr);
-            }
+        foreach (var key in keys)
+        {
+            XmlElement varElement = doc.CreateElement("var");
+            enumElement.AppendChild(varElement);
+
+            XmlAttribute varNameAttr = doc.CreateAttribute("name");
+            varNameAttr.Value = key;
+            varElement.Attributes.Append(varNameAttr);
         }
 
         doc.Save(Path.Combine(outputPath, "TableDef.xml"));
