@@ -2,6 +2,7 @@
 using Luban.DataVisitors;
 using Luban.Defs;
 using NLog;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Xml;
 
@@ -16,7 +17,7 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
 
     private string _defaultLangKey = string.Empty;
 
-    private List<string> _files = new();
+    private ConcurrentBag<string> _files = new();
 
     void IDataTarget.ProcessDataTargetBegin()
     {
@@ -144,25 +145,30 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
                 string liKey = $"{textKeyCollection.Prefix}{i}";
                 string liVal = keyArray[i];
 
+                DataRow row;
                 lock (dt.Rows.SyncRoot)
                 {
-                    var row = dt.Rows.Find(liKey);
+                    row = dt.Rows.Find(liKey);
                     if (row == null)
                     {
                         row = dt.NewRow();
                         row[CommonString.TableKey] = liKey;
-                        dt.Rows.Add(row);
-                    }
 
-                    var oldChangeFlag = row[CommonString.ChangedFlagKey];
-                    string oldValue = row[langKeyLine] == DBNull.Value ? string.Empty : (string)row[langKeyLine];
-                    if (oldChangeFlag == DBNull.Value ||
-                        oldChangeFlag is string str && str != true.ToString().ToUpper() && oldValue != liVal)
-                    {
-                        row[CommonString.ChangedFlagKey] = true.ToString().ToUpper();
+                        lock (dt.Rows.SyncRoot)
+                        {
+                            dt.Rows.Add(row);
+                        }
                     }
-                    row[langKeyLine] = liVal;
                 }
+
+                var oldChangeFlag = row[CommonString.ChangedFlagKey];
+                string oldValue = row[langKeyLine] == DBNull.Value ? string.Empty : (string)row[langKeyLine];
+                if (oldChangeFlag == DBNull.Value ||
+                    oldChangeFlag is string str && str != true.ToString().ToUpper() && oldValue != liVal)
+                {
+                    row[CommonString.ChangedFlagKey] = true.ToString().ToUpper();
+                }
+                row[langKeyLine] = liVal;
             }
 
             _files.Add(fileName);
