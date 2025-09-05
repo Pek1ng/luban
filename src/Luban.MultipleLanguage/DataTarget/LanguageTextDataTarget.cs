@@ -62,6 +62,7 @@ public class LanguageTextDataTarget : DataTargetBase, IDataTarget
         }
 
         XmlAttribute inputAttr = doc.CreateAttribute("input");
+        inputs.Sort();
         inputAttr.Value = string.Join(",", inputs);
         child.Attributes.Append(inputAttr);
 
