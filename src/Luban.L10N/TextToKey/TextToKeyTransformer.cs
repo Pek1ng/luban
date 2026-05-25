@@ -24,25 +24,43 @@ using Luban.Types;
 
 namespace Luban.L10N.TextToKey;
 
-public class TextToKeyTransformer : TextToKeyDataTransfomer, IDataFuncVisitor2<string, DType>
+public class TextKey
+{
+    public string TableName;
+
+    public string IndexValue;
+
+    public string FieldName;
+
+    public Dictionary<string, string> CurrentTableMap;
+
+    public override string ToString()
+    {
+        return $"{TableName}_{FieldName}_{IndexValue}";
+    }
+}
+
+public class TextToKeyTransformer : TextToKeyDataTransfomer, IDataFuncVisitor2<TextKey, DType>
 {
     private static readonly NLog.Logger s_logger = NLog.LogManager.GetCurrentClassLogger();
 
-    private readonly TextToKeyTextProvider _provider;
+    public TextToKeyTransformer() { }
 
-    public TextToKeyTransformer(TextToKeyTextProvider provider)
-    {
-        _provider = provider;
-    }
-
-    DType IDataFuncVisitor2<string, DType>.Accept(DString data, TType type, string key)
+    DType IDataFuncVisitor2<TextKey, DType>.Accept(DString data, TType type, TextKey textKey)
     {
         if (string.IsNullOrEmpty(data.Value) || !type.HasTag("text"))
         {
             return data;
         }
 
-        _provider.CurrentTableMap.Add(key, data.Value);
+        var map = textKey.CurrentTableMap;
+        //检查表级别的文本是否有重复,有重复就拿生成过的多语言key作为当前的Key
+        if (!map.TryGetValue(data.Value, out string key))
+        {
+            key = textKey.ToString();
+            map.Add(data.Value, key);
+        }
+
         return DString.ValueOf(type, key);
     }
 }

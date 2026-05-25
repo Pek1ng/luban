@@ -51,9 +51,35 @@ internal class TextKeyListDataTarget : DataTargetBase
         int index = 0;
         foreach (var kvp in map)
         {
-            array[index++] = kvp;
+            string newKey = kvp.Value.Replace('"', '-').Replace(',', '-');
+            array[index++] = new(newKey, kvp.Key);
         }
-        Array.Sort(array, static (a, b) => a.Key.CompareTo(b.Key));
+        Array.Sort(array, static (a, b) =>
+        {
+            var keyA = a.Key.AsSpan();
+            var keyB = b.Key.AsSpan();
+
+            int indexA = keyA.LastIndexOf('_');
+            int indexB = keyB.LastIndexOf('_');
+
+            var prefixA = keyA[..indexA];
+            var prefixB = keyB[..indexB];
+
+            //假如前缀不同按前缀排序
+            int prefixCompare = prefixA.CompareTo(prefixB, StringComparison.Ordinal);
+            if (prefixCompare != 0)
+            {
+                return prefixCompare;
+            }
+
+            //如果字段的Key是数字就按照数字排序
+            if (int.TryParse(keyA[(indexA + 1)..], out int numA) && int.TryParse(keyB[(indexB + 1)..], out int numB))
+            {
+                return numA.CompareTo(numB);
+            }
+
+            return string.Compare(a.Key, b.Key, StringComparison.Ordinal);
+        });
 
         stringBuilder.Append(keyFieldName);
         stringBuilder.Append(',');

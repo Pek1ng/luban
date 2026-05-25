@@ -29,8 +29,6 @@ public class TextToKeyTextProvider : ITextProvider
 
     public readonly Dictionary<string, Dictionary<string, string>> TextToKeyMap = new();
 
-    public Dictionary<string, string> CurrentTableMap {  get; set; }
-
     public void Load() { }
 
     public bool ConvertTextKeyToValue => true;
@@ -50,20 +48,35 @@ public class TextToKeyTextProvider : ITextProvider
 
     public void ProcessDatas()
     {
-        var textToKeyTransformer = new TextToKeyTransformer(this);
+        var textToKeyTransformer = new TextToKeyTransformer();
+        TextKey textKey = new();
 
         foreach (var table in GenerationContext.Current.Tables)
         {
             if (table.IndexList.Count == 1)
             {
-                CurrentTableMap = new();
-                TextToKeyMap.Add(table.FullName, CurrentTableMap);
+                textKey.CurrentTableMap = new();
+                TextToKeyMap.Add(table.FullName, textKey.CurrentTableMap);
 
                 int index = table.IndexList[0].IndexFieldIdIndex;
                 foreach (var record in GenerationContext.Current.GetTableAllDataList(table))
                 {
-                    string key = record.Data.Fields[index].ToString();
-                    record.Data = (DBean)record.Data.Apply(textToKeyTransformer, table.ValueTType, $"{table.FullName}_{key}");
+                    DType dType = record.Data.Fields[index];
+
+                    string value;
+                    if (dType is DType<string> stringValue)
+                    {
+                        value = stringValue.Value;
+                    }
+                    else
+                    {
+                        value = dType.ToString();
+                    }
+
+                    textKey.TableName = table.FullName;
+                    textKey.IndexValue = value;
+
+                    record.Data = (DBean)record.Data.Apply(textToKeyTransformer, table.ValueTType, textKey);
                 }
             }
         }

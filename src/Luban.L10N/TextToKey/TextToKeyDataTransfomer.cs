@@ -24,59 +24,59 @@ using Luban.Types;
 
 namespace Luban.L10N.TextToKey;
 
-public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<string, DType>
+public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<TextKey, DType>
 {
-    public DType Accept(DBool data, TType type, string t)
+    public DType Accept(DBool data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DByte data, TType type, string t)
+    public DType Accept(DByte data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DShort data, TType type, string t)
+    public DType Accept(DShort data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DInt data, TType type, string t)
+    public DType Accept(DInt data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DLong data, TType type, string t)
+    public DType Accept(DLong data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DFloat data, TType type, string t)
+    public DType Accept(DFloat data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DDouble data, TType type, string t)
+    public DType Accept(DDouble data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DEnum data, TType type, string t)
+    public DType Accept(DEnum data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DString data, TType type, string t)
+    public DType Accept(DString data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DDateTime data, TType type, string t)
+    public DType Accept(DDateTime data, TType type, TextKey t)
     {
         return data;
     }
 
-    public DType Accept(DBean data, TType type, string t)
+    public DType Accept(DBean data, TType type, TextKey t)
     {
         var defFields = data.ImplType.HierarchyFields;
         int i = 0;
@@ -91,7 +91,8 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<string, DType>
             var defField = defFields[i];
             var fieldType = defField.CType;
 
-            DType newFieldValue = fieldValue.Apply(this, fieldType, $"{t}_{defField.Name}");
+            t.FieldName = defField.Name;
+            DType newFieldValue = fieldValue.Apply(this, fieldType, t);
             if (newFieldValue != fieldValue)
             {
                 if (newFields == null)
@@ -105,7 +106,7 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<string, DType>
         return newFields == null ? data : new DBean(data.TType, data.ImplType, newFields);
     }
 
-    public DType Accept(DArray data, TType type, string t)
+    public DType Accept(DArray data, TType type, TextKey t)
     {
         TType eleType = type.ElementType;
         List<DType> newDatas = null;
@@ -131,7 +132,7 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<string, DType>
         return newDatas == null ? data : new DArray(data.Type, newDatas);
     }
 
-    public DType Accept(DList data, TType type, string t)
+    public DType Accept(DList data, TType type, TextKey t)
     {
         TType eleType = type.ElementType;
         List<DType> newDatas = null;
@@ -157,7 +158,7 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<string, DType>
         return newDatas == null ? data : new DList(data.Type, newDatas);
     }
 
-    public DType Accept(DSet data, TType type, string t)
+    public DType Accept(DSet data, TType type, TextKey t)
     {
         TType eleType = type.ElementType;
         List<DType> newDatas = null;
@@ -183,7 +184,7 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<string, DType>
         return newDatas == null ? data : new DSet(data.Type, newDatas);
     }
 
-    public DType Accept(DMap data, TType type, string t)
+    public DType Accept(DMap data, TType type, TextKey t)
     {
         TMap mapType = (TMap)type;
         bool dirty = false;
