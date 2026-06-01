@@ -25,7 +25,7 @@ using System.Text;
 namespace Luban.L10N.TextToKey;
 
 [DataTarget("text-map")]
-internal class TextKeyListDataTarget : DataTargetBase
+internal class TextKeyMapDataTarget : DataTargetBase
 {
     protected override string DefaultOutputFileExt => "csv";
 
