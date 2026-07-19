@@ -81,6 +81,10 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<TextKey, DType
         var defFields = data.ImplType.HierarchyFields;
         int i = 0;
         List<DType> newFields = null;
+
+        string parentFieldName = t.FieldName;
+        string indexValue = t.IndexValue;
+
         foreach (var fieldValue in data.Fields)
         {
             if (fieldValue == null)
@@ -91,7 +95,16 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<TextKey, DType
             var defField = defFields[i];
             var fieldType = defField.CType;
 
-            t.FieldName = defField.Name;
+            if (string.IsNullOrEmpty(parentFieldName))
+            {
+                t.FieldName = defField.Name;
+            }
+            else
+            {
+                t.FieldName = $"{parentFieldName}_{defField.Name}";
+                t.IndexValue = $"{indexValue}_{t.CollectionKey}";
+            }
+
             DType newFieldValue = fieldValue.Apply(this, fieldType, t);
             if (newFieldValue != fieldValue)
             {
@@ -103,6 +116,10 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<TextKey, DType
             }
             ++i;
         }
+
+        t.FieldName = parentFieldName;
+        t.IndexValue = indexValue;
+
         return newFields == null ? data : new DBean(data.TType, data.ImplType, newFields);
     }
 
@@ -118,6 +135,7 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<TextKey, DType
                 ++index;
                 continue;
             }
+            t.CollectionKey = index.ToString();
             DType newEle = ele.Apply(this, eleType, t);
             if (newEle != ele)
             {
@@ -144,6 +162,7 @@ public abstract class TextToKeyDataTransfomer : IDataFuncVisitor2<TextKey, DType
                 ++index;
                 continue;
             }
+            t.CollectionKey = index.ToString();
             DType newEle = ele.Apply(this, eleType, t);
             if (newEle != ele)
             {

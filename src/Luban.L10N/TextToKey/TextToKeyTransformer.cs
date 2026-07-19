@@ -32,11 +32,13 @@ public class TextKey
 
     public string FieldName;
 
+    public string CollectionKey;
+
     public Dictionary<string, string> CurrentTableMap;
 
     public override string ToString()
     {
-        return $"{TableName}_{FieldName}_{IndexValue}";
+        return $"{TableName}_{FieldName}_{IndexValue}".ToLower();
     }
 }
 

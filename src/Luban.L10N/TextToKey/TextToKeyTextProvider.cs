@@ -73,7 +73,9 @@ public class TextToKeyTextProvider : ITextProvider
                         value = dType.ToString();
                     }
 
-                    textKey.TableName = table.FullName;
+                    string flag = "Table";
+                    textKey.TableName = table.Name.Replace(flag, string.Empty);
+
                     textKey.IndexValue = value;
 
                     record.Data = (DBean)record.Data.Apply(textToKeyTransformer, table.ValueTType, textKey);
